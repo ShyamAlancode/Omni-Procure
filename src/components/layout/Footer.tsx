@@ -6,7 +6,7 @@ import { useState } from "react";
 
 export default function Footer() {
     const [theme, setTheme] = useState<"dark" | "light">("dark");
-    const githubUrl = "https://github.com";
+    const githubUrl = "https://github.com/ShyamAlancode/Omni-Procure";
 
     const handleSmoothScroll = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>, href: string) => {
         e.preventDefault();

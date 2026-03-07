@@ -13,7 +13,7 @@ export default function Navbar() {
     const [activeSection, setActiveSection] = useState("");
 
     const demoUrl = process.env.NEXT_PUBLIC_DEMO_URL || "http://localhost:8501";
-    const githubUrl = "https://github.com";
+    const githubUrl = "https://github.com/ShyamAlancode/Omni-Procure";
 
     const navLinks = [
         { name: "Capabilities", href: "#features" },
@@ -130,7 +130,7 @@ export default function Navbar() {
 
                         <Link
                             href={demoUrl}
-              onClick={() => sendToast("Initializing OmniProcure Demo Environment...")}
+                            onClick={() => sendToast("Initializing OmniProcure Demo Environment...")}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="relative px-5 py-2 rounded-lg text-sm font-bold text-white overflow-hidden group border border-[#3b82f6]/50 shadow-[0_0_15px_rgba(59,130,246,0.3)] hover:shadow-[0_0_25px_rgba(59,130,246,0.5)] transition-all bg-[#3b82f6]/20"
@@ -194,7 +194,7 @@ export default function Navbar() {
                                 </Link>
                                 <Link
                                     href={demoUrl}
-              onClick={() => sendToast("Initializing OmniProcure Demo Environment...")}
+                                    onClick={() => sendToast("Initializing OmniProcure Demo Environment...")}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="flex items-center justify-center w-full px-4 py-3 rounded-md text-base font-bold text-white bg-gradient-to-r from-[#3b82f6] to-purple-600 shadow-lg"

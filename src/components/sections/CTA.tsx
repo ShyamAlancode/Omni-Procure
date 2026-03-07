@@ -8,7 +8,7 @@ import { sendToast } from "@/components/ui/ToasterProvider";
 
 export default function CTA() {
     const demoUrl = process.env.NEXT_PUBLIC_DEMO_URL || "http://localhost:8501";
-    const githubUrl = "https://github.com"; // User will update this later
+    const githubUrl = "https://github.com/ShyamAlancode/Omni-Procure"; // Updated with actual repository
 
     return (
         <section className="w-full py-32 bg-[#0A0A0A] relative overflow-hidden border-t border-white/5">
