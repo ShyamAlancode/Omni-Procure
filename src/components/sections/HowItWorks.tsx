@@ -2,8 +2,13 @@
 
 import React from 'react';
 import AnimatedSection from '@/components/ui/AnimatedSection';
-import RadialOrbitalTimeline from '@/components/ui/radial-orbital-timeline';
 import { PackageSearch, ShieldCheck, Activity, Cpu, UserCheck } from 'lucide-react';
+import dynamic from "next/dynamic";
+
+const RadialOrbitalTimeline = dynamic(
+    () => import('@/components/ui/radial-orbital-timeline'),
+    { ssr: false }
+);
 
 const agentTimelineData = [
     {

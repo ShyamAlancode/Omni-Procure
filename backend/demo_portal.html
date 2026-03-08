@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Supplier Portal</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; margin: 0; padding: 0; }
+        .header { background-color: #1e3a8a; color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .container { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+        .product-card { background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .product-title { font-size: 1.25rem; font-weight: bold; color: #1e3a8a; margin-bottom: 0.5rem; }
+        .product-sku { color: #6b7280; font-size: 0.875rem; margin-bottom: 1rem; }
+        .product-price { font-size: 1.5rem; font-weight: bold; color: #059669; }
+        .quantity-wrapper { display: flex; align-items: center; gap: 0.5rem; margin: 1rem 0; }
+        .quantity-input { width: 80px; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 4px; }
+        .add-to-cart { background-color: #2563eb; color: white; border: none; padding: 0.75rem 1rem; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; transition: background-color 0.2s; }
+        .add-to-cart:hover { background-color: #1d4ed8; }
+        .cart-status { display: none; background-color: #ecfdf5; color: #065f46; padding: 1rem; border-radius: 4px; border: 1px solid #059669; margin-top: 1rem; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>OmniProcure Certified Supplier Portal</h1>
+        <div id="cart-counter">Cart: 0 items</div>
+    </div>
+    
+    <div class="container">
+        <h2>Industrial Catalog</h2>
+        <div class="product-grid">
+            <div class="product-card" id="product-adhesive">
+                <div class="product-title">Industrial Epoxy Adhesive (500 units)</div>
+                <div class="product-sku">SKU: ADH-IND-50G</div>
+                <div class="product-price">$4,375.00</div>
+                <div class="quantity-wrapper">
+                    <label for="qty-adh">Qty:</label>
+                    <input type="number" id="qty-adh" class="quantity-input" value="1" min="1">
+                </div>
+                <button class="add-to-cart" id="btn-add-cart" onclick="addToCart()">Add to Cart</button>
+                <div class="cart-status" id="success-msg">✅ Successfully added 500 units to cart! Proceeding to checkout...</div>
+            </div>
+            
+            <div class="product-card">
+                <div class="product-title">Lithium Carbonate (100kg)</div>
+                <div class="product-sku">SKU: LIT-CARB-100</div>
+                <div class="product-price">$8,500.00</div>
+                <div class="quantity-wrapper">
+                    <label for="qty-lit">Qty:</label>
+                    <input type="number" id="qty-lit" class="quantity-input" value="1" min="1">
+                </div>
+                <button class="add-to-cart">Add to Cart</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function addToCart() {
+            document.getElementById('success-msg').style.display = 'block';
+            document.getElementById('cart-counter').innerText = 'Cart: 1 item (500 units)';
+            document.getElementById('btn-add-cart').innerText = 'Proceeding to Checkout...';
+            document.getElementById('btn-add-cart').style.backgroundColor = '#059669';
+        }
+    </script>
+</body>
+</html>

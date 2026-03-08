@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Github, Moon, Sun } from "lucide-react";
 import { sendToast } from "@/components/ui/ToasterProvider";
+import { AuthButtons } from "@/components/ui/AuthButtons";
 
 export default function Navbar() {
     const [isScrolled, setIsScrolled] = useState(false);
@@ -128,17 +129,10 @@ export default function Navbar() {
                             GitHub
                         </Link>
 
-                        <Link
-                            href={demoUrl}
-                            onClick={() => sendToast("Initializing OmniProcure Demo Environment...")}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="relative px-5 py-2 rounded-lg text-sm font-bold text-white overflow-hidden group border border-[#3b82f6]/50 shadow-[0_0_15px_rgba(59,130,246,0.3)] hover:shadow-[0_0_25px_rgba(59,130,246,0.5)] transition-all bg-[#3b82f6]/20"
-                        >
-                            {/* Glow Pulse */}
-                            <div className="absolute inset-0 bg-[#3b82f6] opacity-0 group-hover:opacity-20 transition-opacity duration-500"></div>
-                            <span className="relative z-10">Launch Demo</span>
-                        </Link>
+                        {/* Production Auth Buttons */}
+                        <div className="pl-2 border-l border-white/10">
+                            <AuthButtons />
+                        </div>
                     </div>
 
                     {/* Mobile menu button */}
