@@ -1,5 +1,6 @@
 import os
 import json
+import asyncio
 import logging
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
@@ -27,8 +28,8 @@ app.add_middleware(
 
 # --- Models ---
 class ProcurementRequest(BaseModel):
-    prompt: str
-    user_id: str
+    request: str
+    user_id: Optional[str] = "default_user"
     target_budget: Optional[float] = None
 
 class ProcurementResponse(BaseModel):
@@ -55,12 +56,12 @@ swarm_manager = StrandsSwarmManager()
 
 @app.post("/agent/procure", response_model=ProcurementResponse)
 @app.post("/api/orchestrate", response_model=ProcurementResponse)
-async def orchestrate_procurement(request: ProcurementRequest):
+async def orchestrate_procurement(payload: ProcurementRequest):
     """
     Main entrypoint for the Next.js frontend to trigger the AI Agent Swarm (REST fallback).
     """
-    logger.info(f"Received REST request from {request.user_id}: {request.prompt}")
-    result = await swarm_manager.invoke_swarm(request.prompt)
+    logger.info(f"Received REST request from {payload.user_id}: {payload.request}")
+    result = await swarm_manager.invoke_swarm(payload.request)
 
     return ProcurementResponse(
         status=result["status"],
