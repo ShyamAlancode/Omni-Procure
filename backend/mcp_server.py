@@ -2,6 +2,7 @@ from mcp.server.fastmcp import FastMCP
 import aiosqlite
 import database as db
 import os
+from embedding_service import search_catalog_by_text
 
 mcp = FastMCP("OmniProcure-ERP")
 
@@ -137,6 +138,13 @@ async def get_purchase_orders(user_id: str) -> list:
     """Returns all purchase orders for a user."""
     orders = await db.get_orders_for_user(user_id)
     return orders
+
+
+# ── 8. Semantic Search ────────────────────────────────────────
+@mcp.tool()
+async def semantic_catalog_search(query: str, top_k: int = 3) -> list:
+    """Find products by semantic similarity using Nova multimodal embeddings."""
+    return await search_catalog_by_text(query, top_k=top_k)
 
 
 if __name__ == "__main__":

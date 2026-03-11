@@ -15,6 +15,7 @@ from pydantic import BaseModel, Field
 import database as db
 from agents.orchestrator import run_procurement
 from nova_act_worker import get_worker
+from embedding_service import init_embedding_tables, seed_product_embeddings, verify_screenshot_similarity
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname)s %(message)s")
 logger = logging.getLogger("server")
@@ -37,7 +38,9 @@ async def lifespan(app: FastAPI):
     logger.info("OmniProcure server starting up...")
     await db.init_db()
     await db.seed_db()
-    logger.info("Database ready.")
+    await init_embedding_tables()
+    await seed_product_embeddings()
+    logger.info("Database and Embeddings ready.")
     yield
     logger.info("OmniProcure server shutting down.")
 
@@ -167,6 +170,18 @@ async def run_procurement_pipeline(job_id: str, request_text: str, user_id: str)
             "compliance_status": "PASSED",
             "sku":          result.get("catalog_result", {}).get("sku", "N/A"),
         }
+
+        # 4.5 VISION QA (Cross-modal Embedding Check)
+        if screenshot_b64 and po_draft.get("sku"):
+            try:
+                vision_qa = await verify_screenshot_similarity(
+                    job_id, screenshot_b64, po_draft["sku"]
+                )
+                logger.info(f"Cross-modal Vision QA: {vision_qa}")
+                # Store QA result for HITL feedback
+                po_draft["vision_qa"] = vision_qa
+            except Exception as vqe:
+                logger.error(f"Vision QA error: {vqe}")
 
         if job_id in jobs:
             jobs[job_id]["po_draft"]          = po_draft
