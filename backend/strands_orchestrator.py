@@ -1,178 +1,150 @@
-import asyncio
-import logging
 import json
+import re
+import logging
 import boto3
-from typing import Any, Dict, List
-from mcp_client import mcp_client
-from actuator_worker import ActuatorWorker
+from botocore.exceptions import BotoCoreError, ClientError
 
-logger = logging.getLogger("OmniProcure-Strands")
+logger = logging.getLogger("strands_orchestrator")
 
-class StrandsSwarmManager:
-    """
-    Real implementation of the AWS Strands Agent logic mapping to Amazon Bedrock's Converse API.
-    """
+
+class OrchestratorAgent:
     def __init__(self):
-        # We assume local AWS credentials exist (~/.aws/credentials) or are exported in env.
-        self.bedrock = boto3.client("bedrock-runtime", region_name="us-east-1")
-        self.model_id = "us.amazon.nova-lite-v1:0" # Fallback to v1 if nova-2-lite isn't provisioned yet
-        
-        self.system_prompt = [
-            {
-                "text": (
-                    "You are OmniProcure Orchestrator, an enterprise AI managing Source-to-Pay (S2P) operations. "
-                    "You must break down natural language requests into deterministic multi-step operations. "
-                    "First, ALWAYS use the 'search_inventory' tool to check the MCP SQLite database for the item and its price. "
-                    "Second, use the 'actuate_browser' tool to physically navigate to the supplier and order it."
-                )
-            }
-        ]
-        
-        self.tool_config = {
-            "tools": [
-                {
-                    "toolSpec": {
-                        "name": "search_inventory",
-                        "description": "Search the internal enterprise SQLite database for items, prices, and compliance codes.",
-                        "inputSchema": {
-                            "json": {
-                                "type": "object",
-                                "properties": {
-                                    "query": {
-                                        "type": "string",
-                                        "description": "The name or category of the product to search for, e.g., 'adhesive'"
-                                    }
-                                },
-                                "required": ["query"]
-                            }
-                        }
-                    }
-                },
-                {
-                    "toolSpec": {
-                        "name": "actuate_browser",
-                        "description": "Trigger the Amazon Nova Act headless browser actuator to physically perform web tasks.",
-                        "inputSchema": {
-                            "json": {
-                                "type": "object",
-                                "properties": {
-                                    "target_action": {
-                                        "type": "string",
-                                        "description": "What to do in the browser, e.g. 'add to cart and checkout'"
-                                    },
-                                    "search_term": {
-                                        "type": "string",
-                                        "description": "The exact SKU or product term to search on the site"
-                                    }
-                                },
-                                "required": ["target_action", "search_term"]
-                            }
-                        }
-                    }
-                }
-            ]
-        }
-        
-    async def invoke_swarm(self, user_prompt: str) -> Dict[str, Any]:
-        """
-        Executes the Bedrock Converse API with tool calling (The real Engine).
-        """
-        traces = []
-        
-        def push_trace(agent: str, status: str, details: str):
-            traces.append({"agent": agent, "status": status, "details": details})
-            
-        push_trace("Orchestrator (Nova)", "Initializing", f"Engine activated. Calling {self.model_id}.")
-        
-        messages = [
-            {
-                "role": "user",
-                "content": [{"text": user_prompt}]
-            }
-        ]
-        
         try:
-            # 1. Initial Orchestrator Call
-            response = self.bedrock.converse(
-                modelId=self.model_id,
-                messages=messages,
-                system=self.system_prompt,
-                toolConfig=self.tool_config
-            )
-            
-            output_message = response['output']['message']
-            messages.append(output_message)
-            
-            # 2. Check for Tool Requests
-            for content_block in output_message['content']:
-                if 'toolUse' in content_block:
-                    tool_use = content_block['toolUse']
-                    tool_name = tool_use['name']
-                    tool_input = tool_use['input']
-                    
-                    if tool_name == "search_inventory":
-                        push_trace("Compliance Worker (MCP)", "Executing Database Tool", f"Querying SQLite for: {tool_input.get('query')}")
-                        mcp_result = await mcp_client.call_tool("search_inventory", tool_input)
-                        
-                        # Add tool result back to messages
-                        messages.append({
-                            "role": "user",
-                            "content": [
-                                {
-                                    "toolResult": {
-                                        "toolUseId": tool_use['toolUseId'],
-                                        "content": [{"json": mcp_result}]
-                                    }
-                                }
-                            ]
-                        })
-                        
-                        push_trace("Compliance Worker (MCP)", "Data Found", f"Returned exactly {len(mcp_result.get('data', []))} records from MCP SQLite via FastMCP fallback.")
-                        
-            # 3. Second Orchestrator Call to evaluate MCP data and call actuator
-            response2 = self.bedrock.converse(
-                modelId=self.model_id,
-                messages=messages,
-                system=self.system_prompt,
-                toolConfig=self.tool_config
-            )
-            
-            output_message2 = response2['output']['message']
-            messages.append(output_message2)
-            
-            for content_block in output_message2['content']:
-                if 'toolUse' in content_block:
-                    tool_use = content_block['toolUse']
-                    if tool_use['name'] == "actuate_browser":
-                        push_trace("Actuator Agent (Browser)", "Launching Headless Run", f"Instructed to: {tool_use['input'].get('target_action')}")
-                        
-                        # Trigger actual Playwright worker
-                        actuator = ActuatorWorker()
-                        act_res = await actuator.execute_task(
-                            tool_use['input'].get('target_action'), 
-                            [tool_use['input'].get('search_term')]
-                        )
-                        
-                        if act_res["status"] == "success":
-                            push_trace("Actuator Agent", "Execution Complete", f"Captured trace evidence at {act_res.get('evidence_file', 'unknown')}.")
-                        else:
-                            push_trace("Actuator Agent", "Error", f"Failed: {act_res.get('message')}")
-                            
-            # 4. Final Final Answer
-            push_trace("Evidence Reviewer", "Analyzing Output", "Validating final state. Requesting Human-In-The-Loop.")
-            
-            # For hackathon safety, we always return AWAITING_HUMAN_APPROVAL at the end
-            return {
-                "status": "AWAITING_HUMAN_APPROVAL",
-                "trace": traces,
-                "final_recommendation": "The engine has successfully negotiated the database and automated the browser. P.O. is ready for approval."
-            }
-            
+            self.client = boto3.client("bedrock-runtime", region_name="us-east-1")
+            self.model_id = "us.amazon.nova-lite-v1:0"
+            self._bedrock_available = True
         except Exception as e:
-            logger.error(f"Bedrock Converse Error: {e}")
-            push_trace("System Error", "Failed", str(e))
-            return {
-                "status": "error",
-                "trace": traces,
-                "final_recommendation": f"Failed to communicate with AWS Bedrock: {e}"
-            }
+            logger.error(f"Bedrock client init failed: {e}")
+            self._bedrock_available = False
+
+    def analyze(self, request_text: str) -> dict:
+        if not self._bedrock_available:
+            logger.warning("Bedrock unavailable, using fallback parser")
+            return self._fallback_parse(request_text)
+
+        prompt = f"""You are an enterprise procurement AI. Analyze this procurement request and extract structured information.
+
+Request: {request_text}
+
+Respond ONLY with a valid JSON object — no markdown, no extra text:
+{{
+    "product_name": "exact product name",
+    "quantity": 100,
+    "budget_per_unit": 10.0,
+    "total_budget": 1000.0,
+    "category": "Safety Equipment",
+    "urgency": "normal",
+    "reasoning": "brief explanation"
+}}"""
+
+        try:
+            response = self.client.converse(
+                modelId=self.model_id,
+                messages=[{"role": "user", "content": [{"text": prompt}]}],
+                inferenceConfig={"maxTokens": 500, "temperature": 0.1}
+            )
+            content = response["output"]["message"]["content"][0]["text"]
+            json_match = re.search(r'\{.*\}', content, re.DOTALL)
+            if json_match:
+                parsed = json.loads(json_match.group())
+                # Normalize and validate required fields
+                return {
+                    "product_name": str(parsed.get("product_name", "Unknown Product")),
+                    "quantity": int(parsed.get("quantity", 100)),
+                    "budget_per_unit": float(parsed.get("budget_per_unit", 10.0)),
+                    "total_budget": float(parsed.get("total_budget", 1000.0)),
+                    "category": str(parsed.get("category", "General")),
+                    "urgency": str(parsed.get("urgency", "normal")),
+                    "reasoning": str(parsed.get("reasoning", ""))
+                }
+            logger.warning("No JSON found in Bedrock response, using fallback")
+            return self._fallback_parse(request_text)
+
+        except (BotoCoreError, ClientError) as e:
+            logger.error(f"Bedrock API error: {e}")
+            return self._fallback_parse(request_text)
+        except json.JSONDecodeError as e:
+            logger.error(f"JSON parse error from Bedrock response: {e}")
+            return self._fallback_parse(request_text)
+        except Exception as e:
+            logger.error(f"Unexpected error in orchestrator: {e}")
+            return self._fallback_parse(request_text)
+
+    def _fallback_parse(self, request_text: str) -> dict:
+        """
+        Rule-based extraction when Bedrock is unavailable or returns bad data.
+        Extracts quantity, budget, and product name from natural language.
+        """
+        text = request_text.strip()
+
+        # Extract quantity
+        quantity_match = re.search(r'(\d[\d,]*)\s*(?:units?|pcs?|pieces?|qty)', text, re.IGNORECASE)
+        if not quantity_match:
+            quantity_match = re.search(r'(?:need|want|order|buy)\s+(\d[\d,]*)', text, re.IGNORECASE)
+        quantity = int(quantity_match.group(1).replace(',', '')) if quantity_match else 100
+
+        # Extract budget
+        budget_match = re.search(r'\$\s*([\d,]+(?:\.\d+)?)', text)
+        if not budget_match:
+            budget_match = re.search(r'([\d,]+(?:\.\d+)?)\s*(?:dollars?|usd)', text, re.IGNORECASE)
+        total_budget = float(budget_match.group(1).replace(',', '')) if budget_match else float(quantity * 20)
+
+        # Determine category from keywords
+        category_map = {
+            "Safety":      ["glove", "helmet", "hard hat", "boot", "goggles", "vest", "fire", "extinguisher", "first aid", "safety"],
+            "Chemicals":   ["chemical", "adhesive", "lubricant", "oil", "lithium", "carbonate", "solvent"],
+            "Electronics": ["sensor", "battery", "ups", "barcode", "scanner", "electronic"],
+            "IT Hardware": ["server", "rack", "switch", "network", "ethernet", "cable", "router"],
+            "Logistics":   ["pallet", "forklift", "shipping", "logistic"],
+            "Office":      ["chair", "desk", "paper", "printer", "office"],
+        }
+        lower_text = text.lower()
+        detected_category = "General"
+        for cat, keywords in category_map.items():
+            if any(kw in lower_text for kw in keywords):
+                detected_category = cat
+                break
+
+        # Extract product name: first meaningful noun phrase
+        stop_words = {'i', 'need', 'want', 'order', 'buy', 'purchase', 'units', 'of', 'under', 'budget',
+                      'for', 'the', 'a', 'an', 'with', 'my', 'our', 'some', 'please', 'get', 'us'}
+        words = re.findall(r'[a-zA-Z]+', text)
+        product_words = [w for w in words if w.lower() not in stop_words][:5]
+        product_name = ' '.join(product_words).title() if product_words else "Industrial Product"
+
+        budget_per_unit = round(total_budget / quantity, 2) if quantity > 0 else 10.0
+
+        return {
+            "product_name": product_name,
+            "quantity": quantity,
+            "budget_per_unit": budget_per_unit,
+            "total_budget": total_budget,
+            "category": detected_category,
+            "urgency": "normal",
+            "reasoning": "Extracted via rule-based fallback parser (Bedrock unavailable)"
+        }
+
+    def check_bedrock_health(self) -> bool:
+        """Ping Bedrock with a minimal request to verify connectivity."""
+        if not self._bedrock_available:
+            return False
+        try:
+            self.client.converse(
+                modelId=self.model_id,
+                messages=[{"role": "user", "content": [{"text": "ping"}]}],
+                inferenceConfig={"maxTokens": 5}
+            )
+            return True
+        except Exception:
+            return False
+
+
+# Module-level singleton
+_agent: OrchestratorAgent | None = None
+
+
+def get_agent() -> OrchestratorAgent:
+    global _agent
+    if _agent is None:
+        _agent = OrchestratorAgent()
+    return _agent

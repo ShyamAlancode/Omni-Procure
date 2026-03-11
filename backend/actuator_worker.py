@@ -23,7 +23,8 @@ class ActuatorWorker:
         # Note: Playwright needs to be installed via `playwright install chromium`
         try:
             async with async_playwright() as p:
-                browser = await p.chromium.launch(headless=True)
+                # We turn OFF headless mode and add slow_mo so the user can WATCH the AI work!
+                browser = await p.chromium.launch(headless=False, slow_mo=700)
                 page = await browser.new_page()
                 
                 logger.info(f"Navigating to {self.demo_url} to perform {target_action}")

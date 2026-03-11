@@ -3,10 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { signIn } from "@/lib/auth";
+import { signIn, getCurrentUser } from "@/lib/auth";
 import GlassCard from "@/components/ui/GlassCard";
 import AnimatedSection from "@/components/ui/AnimatedSection";
 import { ArrowLeft, Loader2, AlertCircle } from "lucide-react";
+import { useEffect } from "react";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -14,6 +15,17 @@ export default function LoginPage() {
     const [password, setPassword] = useState("");
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+
+    // Check for existing session on mount
+    useEffect(() => {
+        async function checkSession() {
+            const user = await getCurrentUser();
+            if (user) {
+                router.push("/dashboard");
+            }
+        }
+        checkSession();
+    }, [router]);
 
     const handleSignIn = async (e: React.FormEvent) => {
         e.preventDefault();

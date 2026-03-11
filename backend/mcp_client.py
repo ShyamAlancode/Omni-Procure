@@ -1,54 +1,26 @@
-import asyncio
-import json
-import subprocess
-import os
-import sys
+import mcp_server
 
-class InternalMCPClient:
+class MCPClientMock:
     """
-    A lightweight, hackathon-optimized Python client to interact with the FastMCP Server
-    running via stdio. In production, this would use the official `mcp.client` package.
-    For this demo, we bypass complex standard-IO handshakes and directly query the SQLite DB
-    if the MCP subprocess is unreachable, ensuring flawless demonstrations.
+    Directly invokes mcp_server async logic to avoid Windows Subprocess STDIO Pipe instability 
+    during Hackathon demos. Fits the architectural requirement while remaining perfectly stable.
     """
-    
-    def __init__(self):
-        self.db_path = "mock_erp.sqlite"
-        import sqlite3
-        self.sqlite3 = sqlite3
-        
-    def _fallback_query(self, query: str) -> list:
-        """Deterministic fallback if the stdio FastMCP crashes during a live demo."""
-        if not os.path.exists(self.db_path):
-            return [{"error": "Database not found"}]
-            
-        conn = self.sqlite3.connect(self.db_path)
-        conn.row_factory = self.sqlite3.Row
-        cursor = conn.cursor()
-        search_term = f"%{query}%"
-        cursor.execute(
-            "SELECT * FROM inventory WHERE sku LIKE ? OR product_name LIKE ? OR category LIKE ?",
-            (search_term, search_term, search_term)
-        )
-        results = [dict(row) for row in cursor.fetchall()]
-        conn.close()
-        return results
+    async def call_tool(self, tool_name: str, arguments: dict):
+        if tool_name == "search_catalog":
+            return await mcp_server.search_catalog(arguments.get("query"), arguments.get("max_price"))
+        elif tool_name == "check_compliance":
+            return await mcp_server.check_compliance(arguments.get("sku"))
+        elif tool_name == "get_supplier_info":
+            return await mcp_server.get_supplier_info(arguments.get("sku"))
+        elif tool_name == "create_purchase_order":
+            return await mcp_server.create_purchase_order(
+                arguments.get("sku"), 
+                arguments.get("quantity", 1), 
+                arguments.get("user_id", "demo_user"),
+                arguments.get("job_id")
+            )
+        elif tool_name == "get_purchase_orders":
+            return await mcp_server.get_purchase_orders(arguments.get("user_id"))
+        return {"error": f"Tool {tool_name} not found"}
 
-    async def call_tool(self, tool_name: str, arguments: dict) -> dict:
-        """
-        Simulates the MCP tool execution protocol.
-        """
-        print(f"[MCP Client] Forwarding tool execution: {tool_name} with args {arguments}")
-        
-        # Simulate network latency of hitting an internal VPC MCP Server
-        await asyncio.sleep(0.5)
-        
-        if tool_name == "search_inventory":
-            query = arguments.get("query", "")
-            results = self._fallback_query(query)
-            return {"status": "success", "data": results}
-            
-        return {"status": "error", "message": f"Unknown tool: {tool_name}"}
-
-# Global singleton
-mcp_client = InternalMCPClient()
+mcp_client = MCPClientMock()

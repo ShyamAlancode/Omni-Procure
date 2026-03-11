@@ -22,6 +22,8 @@ const monthlySpendData = [
     { name: 'Jun', spend: 71000 },
 ];
 
+const BAR_HEIGHTS = [60, 25, 48, 67, 79, 37];
+
 export default function PlatformPreview() {
     const [isMounted, setIsMounted] = useState(false);
     useEffect(() => {
@@ -163,7 +165,7 @@ export default function PlatformPreview() {
                                     ) : (
                                         <div className="w-full h-full flex flex-row items-end justify-around p-4 opacity-50">
                                             {[...Array(6)].map((_, i) => (
-                                                <div key={i} className="w-8 bg-[#3b82f6]/20 rounded-t-sm" style={{ height: `${20 + Math.random() * 60}%` }} />
+                                                <div key={i} className="w-8 bg-[#3b82f6]/20 rounded-t-sm" style={{ height: `${BAR_HEIGHTS[i]}%` }} />
                                             ))}
                                         </div>
                                     )}

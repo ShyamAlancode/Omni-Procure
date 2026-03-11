@@ -1,0 +1,394 @@
+﻿Starting Multi-Agent Integration Test...
+Submitting request: I need 5 units of Industrial Safety Gloves under 20 dollars each
+.\venv\Scripts\python 
+: Traceback (most 
+recent call last):
+At line:1 char:185
++ ... 
+REGION="us-east-1"; 
+.\venv\Scripts\python 
+test_agents.py 2>&1 | 
+Out-F ...
++                      
+   ~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo     
+         : NotSpecifi  
+  ed: (Traceback (mo   
+ st recent call las    
+t)::String) [], Re    
+moteException
+    + FullyQualifiedEr 
+   rorId : NativeComm  
+  andError
+ 
+  File "D:\NovaAI\omnip
+rocure-landing\backend\
+test_agents.py", line 
+30, in <module>
+    asyncio.run(test_mu
+lti_agent())
+  File "C:\Users\shyam\
+AppData\Local\Programs\
+Python\Python312\Lib\as
+yncio\runners.py", 
+line 195, in run
+    return 
+runner.run(main)
+           
+^^^^^^^^^^^^^^^^
+  File "C:\Users\shyam\
+AppData\Local\Programs\
+Python\Python312\Lib\as
+yncio\runners.py", 
+line 118, in run
+    return self._loop.r
+un_until_complete(task)
+           ^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\shyam\
+AppData\Local\Programs\
+Python\Python312\Lib\as
+yncio\base_events.py", 
+line 691, in 
+run_until_complete
+    return 
+future.result()
+           
+^^^^^^^^^^^^^^^
+  File "D:\NovaAI\omnip
+rocure-landing\backend\
+test_agents.py", line 
+18, in test_multi_agent
+    result = await loop
+.run_in_executor(None, 
+run_procurement, 
+request_text)
+             ^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^
+  File "C:\Users\shyam\
+AppData\Local\Programs\
+Python\Python312\Lib\co
+ncurrent\futures\thread
+.py", line 59, in run
+    result = 
+self.fn(*self.args, 
+**self.kwargs)
+             ^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^
+^
+  File "D:\NovaAI\omnip
+rocure-landing\backend\
+venv\Lib\site-packages\
+opentelemetry\instrumen
+tation\threading\__init
+__.py", line 172, in 
+wrapped_func
+    return original_fun
+c(*func_args, 
+**func_kwargs)
+           ^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^
+  File "D:\NovaAI\omnip
+rocure-landing\backend\
+agents\orchestrator.py"
+, line 81, in 
+run_procurement
+    response = master_o
+rchestrator(request_tex
+t)
+               ^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^
+^^
+  File "D:\NovaAI\omnip
+rocure-landing\backend\
+venv\Lib\site-packages\
+strands\agent\agent.py"
+, line 370, in __call__
+    return run_async(
+           ^^^^^^^^^^
+  File "D:\NovaAI\omnip
+rocure-landing\backend\
+venv\Lib\site-packages\
+strands\_async.py", 
+line 34, in run_async
+    return 
+future.result()
+           
+^^^^^^^^^^^^^^^
+  File "C:\Users\shyam\
+AppData\Local\Programs\
+Python\Python312\Lib\co
+ncurrent\futures\_base.
+py", line 456, in 
+result
+    return 
+self.__get_result()
+           
+^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\shyam\
+AppData\Local\Programs\
+Python\Python312\Lib\co
+ncurrent\futures\_base.
+py", line 401, in 
+__get_result
+    raise 
+self._exception
+  File "C:\Users\shyam\
+AppData\Local\Programs\
+Python\Python312\Lib\co
+ncurrent\futures\thread
+.py", line 59, in run
+    result = 
+self.fn(*self.args, 
+**self.kwargs)
+             ^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^
+^
+  File "D:\NovaAI\omnip
+rocure-landing\backend\
+venv\Lib\site-packages\
+opentelemetry\instrumen
+tation\threading\__init
+__.py", line 172, in 
+wrapped_func
+    return original_fun
+c(*func_args, 
+**func_kwargs)
+           ^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^
+  File "D:\NovaAI\omnip
+rocure-landing\backend\
+venv\Lib\site-packages\
+strands\_async.py", 
+line 29, in execute
+    return asyncio.run(
+execute_async())
+           ^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^
+  File "C:\Users\shyam\
+AppData\Local\Programs\
+Python\Python312\Lib\as
+yncio\runners.py", 
+line 195, in run
+    return 
+runner.run(main)
+           
+^^^^^^^^^^^^^^^^
+  File "C:\Users\shyam\
+AppData\Local\Programs\
+Python\Python312\Lib\as
+yncio\runners.py", 
+line 118, in run
+    return self._loop.r
+un_until_complete(task)
+           ^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\shyam\
+AppData\Local\Programs\
+Python\Python312\Lib\as
+yncio\base_events.py", 
+line 691, in 
+run_until_complete
+    return 
+future.result()
+           
+^^^^^^^^^^^^^^^
+  File "D:\NovaAI\omnip
+rocure-landing\backend\
+venv\Lib\site-packages\
+strands\_async.py", 
+line 26, in 
+execute_async
+    return await 
+async_func()
+           
+^^^^^^^^^^^^^^^^^^
+  File "D:\NovaAI\omnip
+rocure-landing\backend\
+venv\Lib\site-packages\
+strands\agent\agent.py"
+, line 413, in 
+invoke_async
+    async for event in 
+events:
+  File "D:\NovaAI\omnip
+rocure-landing\backend\
+venv\Lib\site-packages\
+strands\agent\agent.py"
+, line 622, in 
+stream_async
+    async for event in 
+events:
+  File "D:\NovaAI\omnip
+rocure-landing\backend\
+venv\Lib\site-packages\
+strands\agent\agent.py"
+, line 676, in 
+_run_loop
+    async for event in 
+events:
+  File "D:\NovaAI\omnip
+rocure-landing\backend\
+venv\Lib\site-packages\
+strands\agent\agent.py"
+, line 728, in _execute
+_event_loop_cycle
+    async for event in 
+events:
+  File "D:\NovaAI\omnip
+rocure-landing\backend\
+venv\Lib\site-packages\
+strands\event_loop\even
+t_loop.py", line 154, 
+in event_loop_cycle
+    async for 
+model_event in 
+model_events:
+  File "D:\NovaAI\omnip
+rocure-landing\backend\
+venv\Lib\site-packages\
+strands\event_loop\even
+t_loop.py", line 409, 
+in 
+_handle_model_execution
+    raise e
+  File "D:\NovaAI\omnip
+rocure-landing\backend\
+venv\Lib\site-packages\
+strands\event_loop\even
+t_loop.py", line 340, 
+in 
+_handle_model_execution
+    async for event in 
+stream_messages(
+  File "D:\NovaAI\omnip
+rocure-landing\backend\
+venv\Lib\site-packages\
+strands\event_loop\stre
+aming.py", line 462, 
+in stream_messages
+    async for event in 
+process_stream(chunks, 
+start_time):
+  File "D:\NovaAI\omnip
+rocure-landing\backend\
+venv\Lib\site-packages\
+strands\event_loop\stre
+aming.py", line 393, 
+in process_stream
+    async for chunk in 
+chunks:
+  File "D:\NovaAI\omnip
+rocure-landing\backend\
+venv\Lib\site-packages\
+strands\models\bedrock.
+py", line 681, in 
+stream
+    await task
+  File "C:\Users\shyam\
+AppData\Local\Programs\
+Python\Python312\Lib\as
+yncio\threads.py", 
+line 25, in to_thread
+    return await loop.r
+un_in_executor(None, 
+func_call)
+           ^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^
+  File "C:\Users\shyam\
+AppData\Local\Programs\
+Python\Python312\Lib\co
+ncurrent\futures\thread
+.py", line 59, in run
+    result = 
+self.fn(*self.args, 
+**self.kwargs)
+             ^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^
+^
+  File "D:\NovaAI\omnip
+rocure-landing\backend\
+venv\Lib\site-packages\
+opentelemetry\instrumen
+tation\threading\__init
+__.py", line 172, in 
+wrapped_func
+    return original_fun
+c(*func_args, 
+**func_kwargs)
+           ^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^
+  File "D:\NovaAI\omnip
+rocure-landing\backend\
+venv\Lib\site-packages\
+strands\models\bedrock.
+py", line 802, in 
+_stream
+    raise e
+  File "D:\NovaAI\omnip
+rocure-landing\backend\
+venv\Lib\site-packages\
+strands\models\bedrock.
+py", line 717, in 
+_stream
+    response = self.cli
+ent.converse_stream(**r
+equest)
+               ^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^
+  File "D:\NovaAI\omnip
+rocure-landing\backend\
+venv\Lib\site-packages\
+botocore\client.py", 
+line 602, in _api_call
+    return self._make_a
+pi_call(operation_name,
+ kwargs)
+           ^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^
+  File "D:\NovaAI\omnip
+rocure-landing\backend\
+venv\Lib\site-packages\
+botocore\context.py", 
+line 123, in wrapper
+    return func(*args, 
+**kwargs)
+           
+^^^^^^^^^^^^^^^^^^^^^
+  File "D:\NovaAI\omnip
+rocure-landing\backend\
+venv\Lib\site-packages\
+botocore\client.py", 
+line 1078, in 
+_make_api_call
+    raise error_class(p
+arsed_response, 
+operation_name)
+botocore.errorfactory.V
+alidationException: An 
+error occurred 
+(ValidationException) 
+when calling the 
+ConverseStream 
+operation: The model 
+returned the following 
+errors: Malformed 
+input request: #: 
+extraneous key 
+[thinking] is not 
+permitted, please 
+reformat your input 
+and try again.
+\u2514 Bedrock region: 
+us-east-1
+\u2514 Model id: us.ama
+zon.nova-lite-v1:0

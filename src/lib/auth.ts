@@ -67,6 +67,15 @@ export const resendSignUpCode = async (email: string) => {
  */
 export const signIn = async (email: string, password: string) => {
     try {
+        // Safety: Attempt to sign out first to clear any stale/existing sessions
+        // This prevents UserAlreadyAuthenticatedException
+        try {
+            await amplifySignOut();
+            document.cookie = "omniprocure_auth=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict";
+        } catch (e) {
+            // Ignore sign out errors (e.g. if no user was signed in)
+        }
+
         const result = await amplifySignIn({
             username: email,
             password
