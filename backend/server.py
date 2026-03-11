@@ -11,7 +11,7 @@ from typing import Any
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Request, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 import database as db
 from agents.orchestrator import run_procurement
@@ -67,8 +67,7 @@ class ProcureRequest(BaseModel):
     request: str
     user_id: str = Field(alias="userid", default="demo-user-001")
     
-    class Config:
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class ApproveRequest(BaseModel):

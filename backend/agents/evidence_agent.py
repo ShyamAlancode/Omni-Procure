@@ -1,6 +1,6 @@
 from strands import Agent, tool
 from strands.models import BedrockModel
-import boto3, base64, json, re, os
+import boto3, base64, json, re, os, imghdr, io
 import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
@@ -9,6 +9,14 @@ model = BedrockModel(
     region_name=os.environ.get("AWS_REGION", "us-east-1"),
 )
 
+
+def detect_format(b64_str: str) -> str:
+    try:
+        raw = base64.b64decode(b64_str)
+        fmt = imghdr.what(io.BytesIO(raw))
+        return fmt if fmt in ("png", "jpeg", "gif", "webp") else "png"
+    except:
+        return "png"
 
 @tool
 def review_procurement_evidence(
@@ -39,7 +47,7 @@ def review_procurement_evidence(
                 "content": [
                     {
                         "image": {
-                            "format": "png",
+                            "format": detect_format(screenshot_b64),
                             "source": {"bytes": base64.b64decode(screenshot_b64)}
                         }
                     },
