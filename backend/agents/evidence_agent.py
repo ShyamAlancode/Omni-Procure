@@ -10,13 +10,6 @@ model = BedrockModel(
 )
 
 
-def detect_format(b64_str: str) -> str:
-    try:
-        raw = base64.b64decode(b64_str)
-        fmt = imghdr.what(io.BytesIO(raw))
-        return fmt if fmt in ("png", "jpeg", "gif", "webp") else "png"
-    except:
-        return "png"
 
 @tool
 def review_procurement_evidence(
@@ -40,6 +33,14 @@ def review_procurement_evidence(
     try:
         client = boto3.client("bedrock-runtime",
                               region_name=os.environ.get("AWS_REGION", "us-east-1"))
+        # DETECT format from magic bytes
+        raw_bytes = base64.b64decode(screenshot_b64)
+        img_format = "png"
+        if raw_bytes[:2] == b'\xff\xd8':
+            img_format = "jpeg"
+        elif raw_bytes[:4] == b'\x89PNG':
+            img_format = "png"
+
         response = client.converse(
             modelId="us.amazon.nova-lite-v1:0",
             messages=[{
@@ -47,8 +48,8 @@ def review_procurement_evidence(
                 "content": [
                     {
                         "image": {
-                            "format": detect_format(screenshot_b64),
-                            "source": {"bytes": base64.b64decode(screenshot_b64)}
+                            "format": img_format,
+                            "source": {"bytes": raw_bytes}
                         }
                     },
                     {
