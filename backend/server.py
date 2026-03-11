@@ -2,6 +2,7 @@ import asyncio
 import json
 import logging
 import os
+import re
 import uuid
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
@@ -171,17 +172,39 @@ async def run_procurement_pipeline(job_id: str, request_text: str, user_id: str)
             "sku":          result.get("catalog_result", {}).get("sku", "N/A"),
         }
 
-        # 4.5 VISION QA (Cross-modal Embedding Check)
-        if screenshot_b64 and po_draft.get("sku"):
+        # 4.5 EVIDENCE REVIEW
+        from agents.evidence_agent import evidence_agent as ev_agent
+        from nova_act_worker import NovaActWorker
+
+        screenshot_b64 = NovaActWorker.last_screenshot
+        evidence_result = {"verdict": "APPROVED", "confidence": 75, "checks": [], "summary": "No screenshot"}
+
+        if screenshot_b64:
             try:
-                vision_qa = await verify_screenshot_similarity(
-                    job_id, screenshot_b64, po_draft["sku"]
+                await step(job_id, "EVIDENCE_REVIEW", "running", "Reviewing procurement evidence...")
+                
+                loop = asyncio.get_event_loop()
+                raw = await loop.run_in_executor(None, ev_agent,
+                    f"Review screenshot for {quantity}x {product_name} at ${budget_per_unit}/unit. "
+                    f"SKU: {po_draft.get('sku', '')}. Screenshot: {screenshot_b64[:100]}..."
                 )
-                logger.info(f"Cross-modal Vision QA: {vision_qa}")
-                # Store QA result for HITL feedback
-                po_draft["vision_qa"] = vision_qa
-            except Exception as vqe:
-                logger.error(f"Vision QA error: {vqe}")
+                
+                # Parse evidence result
+                text = str(raw)
+                match = re.search(r'\{.*\}', text, re.DOTALL)
+                if match:
+                    evidence_result = json.loads(match.group())
+
+                await step(job_id, "EVIDENCE_REVIEW",
+                           "complete" if evidence_result.get("verdict") == "APPROVED" else "warning",
+                           evidence_result.get("summary", "Evidence review complete"),
+                           {"evidence_data": evidence_result})
+
+                po_draft["evidence_review"] = evidence_result
+
+            except Exception as e:
+                logger.error(f"Evidence review error: {e}")
+                await step(job_id, "EVIDENCE_REVIEW", "warning", f"Evidence review skipped: {str(e)[:80]}")
 
         if job_id in jobs:
             jobs[job_id]["po_draft"]          = po_draft

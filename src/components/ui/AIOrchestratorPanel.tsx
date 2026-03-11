@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import GlassCard from "@/components/ui/GlassCard";
 import { Send, Bot, Loader2, Workflow, ShieldCheck, CheckCircle2, AlertTriangle, ShieldAlert, ImageIcon, XCircle, ChevronRight } from "lucide-react";
 import { getCurrentUser } from "aws-amplify/auth";
+import EvidenceReviewPanel from "./EvidenceReviewPanel";
 
 type TraceLog = {
     step: string;
@@ -277,6 +278,11 @@ export default function AIOrchestratorPanel() {
                                     </div>
                                 </div>
                             )}
+
+                            <EvidenceReviewPanel
+                                evidence={poDraft?.evidence_review ?? null}
+                                screenshotB64={screenshot ?? null}
+                            />
                         </div>
 
                         <div className="flex gap-2">
