@@ -8,7 +8,7 @@ from agents.actuator_agent import actuator_agent
 
 def create_model_with_retry():
     return BedrockModel(
-        model_id="us.amazon.nova-lite-v1:0",
+        model_id="us.amazon.nova-pro-v1:0",  # Pro supports reasoning
         region_name=os.environ.get("AWS_REGION", "us-east-1"),
         max_tokens=8192,
     )
