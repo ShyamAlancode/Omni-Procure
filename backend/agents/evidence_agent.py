@@ -64,32 +64,37 @@ def review_procurement_evidence(
         elif raw_bytes[:4] == b'\x89PNG':
             img_format = "png"
 
-        response = client.converse(
-            modelId="us.amazon.nova-lite-v1:0",
-            messages=[{
-                "role": "user",
-                "content": [
-                    {
-                        "image": {
-                            "format": img_format,
-                            "source": {"bytes": raw_bytes}
-                        }
-                    },
-                    {
-                        "text": (
-                            f'Analyze this procurement screenshot. '
-                            f'Expected: {expected_quantity}x "{expected_product}" at ${expected_price}/unit. '
-                            f'Reply ONLY valid JSON: {{"product_match": true/false, '
-                            f'"quantity_match": true/false, "price_match": true/false, '
-                            f'"visible_product": "...", "visible_quantity": 0, '
-                            f'"visible_price": 0.0, "confidence": 0-100}}'
-                        )
-                    }
-                ]
-            }],
-            inferenceConfig={"maxTokens": 256, "temperature": 0}
+        prompt = (
+            f'Analyze this procurement screenshot. '
+            f'Expected: {expected_quantity}x "{expected_product}" at ${expected_price}/unit. '
+            f'Reply ONLY valid JSON: {{"product_match": true/false, '
+            f'"quantity_match": true/false, "price_match": true/false, '
+            f'"visible_product": "...", "visible_quantity": 0, '
+            f'"visible_price": 0.0, "confidence": 0-100}}'
         )
-        text = response["output"]["message"]["content"][0]["text"]
+
+        body = {
+            "schemaVersion": "messages-v1",
+            "messages": [
+                {
+                    "role": "user",
+                    "content": [
+                        {"image": {"format": img_format, "source": {"bytes": screenshot_b64}}},
+                        {"text": prompt}
+                    ]
+                }
+            ],
+            "inferenceConfig": {"maxTokens": 256, "temperature": 0}
+        }
+
+        response = client.invoke_model(
+            modelId="us.amazon.nova-lite-v1:0",
+            body=json.dumps(body),
+            contentType="application/json",
+            accept="application/json"
+        )
+        resp_body = json.loads(response["body"].read())
+        text = resp_body["output"]["message"]["content"][0]["text"]
         match = re.search(r'\{.*\}', text, re.DOTALL)
         vision_check = json.loads(match.group()) if match else {}
 
