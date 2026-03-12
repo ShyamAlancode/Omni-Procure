@@ -196,17 +196,16 @@ async def run_procurement_pipeline(job_id: str, request_text: str, user_id: str)
             try:
                 await step(job_id, "EVIDENCE_REVIEW", "running", "Reviewing procurement evidence...")
                 
-                loop = asyncio.get_event_loop()
-                raw = await loop.run_in_executor(None, ev_agent,
-                    f"Review screenshot for {quantity}x {product_name} at ${budget_per_unit}/unit. "
-                    f"SKU: {po_draft.get('sku', '')}. Screenshot: {screenshot_b64[:100]}..."
-                )
+                from agents.evidence_agent import review_procurement_evidence
                 
-                # Parse evidence result
-                text = str(raw)
-                match = re.search(r'\{.*\}', text, re.DOTALL)
-                if match:
-                    evidence_result = json.loads(match.group())
+                loop = asyncio.get_event_loop()
+                evidence_result = await loop.run_in_executor(None, review_procurement_evidence,
+                    screenshot_b64,
+                    product_name,
+                    quantity,
+                    final_unit_price,
+                    catalog_res.get("sku", "")
+                )
 
                 await step(job_id, "EVIDENCE_REVIEW",
                            "complete" if evidence_result.get("verdict") == "APPROVED" else "warning",
@@ -244,17 +243,31 @@ async def run_procurement_pipeline(job_id: str, request_text: str, user_id: str)
             {"po_draft": po_draft, "screenshot_path": "in_memory"}
         )
 
-        # Wait up to 300s for approve/reject signal
+        # Wait up to 1800s (30m) for approve/reject signal
+        import time
         approval_event: asyncio.Event = jobs[job_id].get("approval_event")
         if approval_event:
-            try:
-                await asyncio.wait_for(approval_event.wait(), timeout=300.0)
-            except asyncio.TimeoutError:
-                logger.warning(f"Job {job_id} HITL timed out after 300s")
+            start_time = time.time()
+            reminder_sent = False
+            timeout = 1800.0
+            
+            while time.time() - start_time < timeout:
+                if approval_event.is_set():
+                    break
+                
+                elapsed = time.time() - start_time
+                if elapsed > 300 and not reminder_sent:
+                    await step(job_id, "HITL_PENDING", "hitl_required", "Waiting for human approval — PO is ready for review.")
+                    reminder_sent = True
+                
+                await asyncio.sleep(5)
+            
+            if not approval_event.is_set():
+                logger.warning(f"Job {job_id} HITL timed out after {timeout}s")
                 if job_id in jobs:
-                    jobs[job_id]["status"] = "FAILED"
-                await db.update_job_status(job_id, "FAILED", completed=True)
-                await step(job_id, "TIMEOUT", "error", "HITL approval timed out after 300 seconds")
+                    jobs[job_id]["status"] = "EXPIRED"
+                await db.update_job_status(job_id, "EXPIRED", completed=True)
+                await step(job_id, "HITL_EXPIRED", "warning", "PO approval window expired. Job can be resubmitted.")
 
     except asyncio.CancelledError:
         logger.warning(f"Job {job_id} task cancelled")
