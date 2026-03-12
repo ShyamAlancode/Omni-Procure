@@ -135,6 +135,9 @@ async def run_procurement_pipeline(job_id: str, request_text: str, user_id: str)
         if job_id in jobs:
             jobs[job_id]["analysis"] = result
 
+        # 2. CATALOG MATCH (From Multi-Agent Result)
+        catalog_res = result.get("catalog_result", {})
+        
         # Use actual catalog price if available, else fallback to budget
         final_unit_price = catalog_res.get("unit_price") or budget_per_unit
 
@@ -142,8 +145,6 @@ async def run_procurement_pipeline(job_id: str, request_text: str, user_id: str)
                    f"Multi-agent analysis: {quantity}x {product_name} @ ${final_unit_price:.2f}/unit",
                    {"strands_result": result})
 
-        # 2. CATALOG MATCH (From Multi-Agent Result)
-        catalog_res = result.get("catalog_result", {})
         await step(job_id, "CATALOG_MATCH", "complete", 
                    f"Catalog check finished. Result: {catalog_res.get('product_name', 'Found')}",
                    {"catalog_data": catalog_res})

@@ -50,6 +50,7 @@ def delegate_to_compliance_agent(
     )
     return _truncate(str(response))
 
+@tool
 def delegate_to_actuator_agent(
     product_name: str, quantity: int, budget: float, portal_url: str = None
 ) -> str:
