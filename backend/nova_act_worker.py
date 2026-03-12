@@ -71,47 +71,50 @@ class NovaActWorker:
              portal_url = None
 
         portal_path = os.path.abspath("demo_portal.html")
+        is_live = portal_url and (portal_url.startswith("http://") or portal_url.startswith("https://"))
         starting_url = portal_url if portal_url else ("file:///" + portal_path.replace('\\', '/'))
 
-        if not portal_url and not os.path.exists(portal_path):
+        site_name = "Supplier Portal"
+        if "uline.com" in starting_url.lower(): site_name = "Uline"
+        elif "grainger.com" in starting_url.lower(): site_name = "Grainger"
+        elif "amazon.com" in starting_url.lower(): site_name = "Amazon Business"
+
+        if not is_live and not portal_url and not os.path.exists(portal_path):
             logger.warning(f"demo_portal.html not found at {portal_path}")
             return self._fallback_result(product_name, quantity, budget, "demo_portal.html not found")
 
         try:
-            emit("Launching supplier portal browser...")
+            emit(f"Launching {site_name} browser...")
             with NovaAct(starting_page=starting_url, headless=False) as nova:
 
-                emit(f"Navigating to supplier portal: {portal_path}")
+                emit(f"Navigating to {site_name}: {starting_url}")
                 nova.act(
-                    f"In the search box, type '{product_name}' and press enter or click search"
+                    f"In the search box, type '{product_name}' and press enter"
                 )
 
-                emit(f"Searching product catalog for '{product_name}'...")
+                emit(f"Searching {site_name} for '{product_name}'...")
                 nova.act(
-                    f"From the search results, click on the product most similar to '{product_name}'"
+                    f"Find the product '{product_name}' or similar and click on it"
                 )
 
-                emit("Selecting best matching product...")
+                emit("Selecting product and setting quantity...")
                 nova.act(
-                    f"Find the quantity input field and clear it, then type '{quantity}'"
+                    f"Find the quantity input field, set it to '{quantity}' and add to cart"
                 )
 
-                emit(f"Setting quantity to {quantity} units...")
-                nova.act("Click the button that says Add to Cart")
-
-                emit("Adding to cart — capturing confirmation screenshot...")
+                emit("Capturing confirmation screenshot...")
                 screenshot_bytes = nova.page.screenshot()
                 screenshot_b64 = base64.b64encode(screenshot_bytes).decode("utf-8")
 
                 steps_taken = [
-                    f"Searched supplier portal for '{product_name}'",
-                    "Selected closest matching product from results",
+                    f"Searched {site_name} for '{product_name}'",
+                    "Selected matching product",
                     f"Set quantity to {quantity} units",
-                    "Added item to procurement cart",
-                    "Screenshot captured for HITL review",
+                    "Added item to cart",
+                    "Screenshot captured for verification",
                 ]
 
-                emit("Browser automation complete — ready for approval")
+                emit(f"Automation on {site_name} complete")
 
                 GLOBAL_SCREENSHOT_CACHE["last"] = screenshot_b64
                 return {
@@ -160,7 +163,7 @@ class NovaActWorker:
                 "quantity": quantity,
                 "unit_price": round(budget, 2),
                 "total_price": round(quantity * budget, 2),
-                "supplier": "SafetyPro Supplies Inc",
+                "supplier": "B2B Supplier Prime",
                 "compliance_status": "PASSED",
                 "recommended": True,
                 "nova_act_steps": steps_taken,

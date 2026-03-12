@@ -1,0 +1,21 @@
+id,name,category,sku,unit_price,supplier_id,compliance_code,stock_qty,portal_url,description
+bf2b1325-661d-4727-8e6c-0551ee3d0c76,Industrial Safety Gloves,Safety,SKU-001,18.0,fe166cf2-8d44-4303-b5be-8c39644eb8d8,ISO-9001,5000,demo_portal.html,Heavy-duty nitrile safety gloves
+53366d04-89de-4369-b795-48fc8e59c04a,Lithium Carbonate 99% Pure,Chemicals,SKU-002,45.0,22891d31-4a84-46d7-bcfa-4603315ae231,REACH-001,2000,demo_portal.html,Battery-grade lithium carbonate
+56497e43-f44a-4788-830c-b822eb942074,Industrial Sensors IoT,Electronics,SKU-003,120.0,36fd3299-104c-48b7-b75e-a9882656bdf2,CE-001,800,demo_portal.html,Multi-protocol industrial IoT sensors
+2996cd60-3d1a-4c7b-9bfd-9dd234417ef4,Server Rack Unit 2U,IT Hardware,SKU-004,890.0,36fd3299-104c-48b7-b75e-a9882656bdf2,FCC-001,150,demo_portal.html,2U rack-mount server chassis
+c64cd955-32f1-4629-a878-a04f7abd4b71,Network Switch 48-Port,IT Hardware,SKU-005,340.0,36fd3299-104c-48b7-b75e-a9882656bdf2,FCC-002,200,demo_portal.html,Managed 48-port gigabit switch
+0f7491ca-eca5-4817-b282-fc3489f99efc,Hard Hat Class E,Safety,SKU-006,24.0,fe166cf2-8d44-4303-b5be-8c39644eb8d8,ANSI-001,3000,demo_portal.html,ANSI Class E electrical hard hat
+a5783944-a31c-428d-b895-1156a5c3afa9,Adhesive Industrial Grade,Chemicals,SKU-007,8.0,22891d31-4a84-46d7-bcfa-4603315ae231,REACH-002,10000,demo_portal.html,High-strength industrial adhesive
+c64572b7-452b-4904-8fa0-3e59a876643b,Safety Goggles Anti-Fog,Safety,SKU-008,12.0,fe166cf2-8d44-4303-b5be-8c39644eb8d8,ANSI-002,4000,demo_portal.html,Anti-fog coated safety goggles
+b21f18ec-4ccd-44b2-962d-ac6c6fe25a36,Office Chair Ergonomic,Office,SKU-009,280.0,9245dd04-08bb-4e49-a675-ceae123d8def,BIFMA-001,500,demo_portal.html,Lumbar-support ergonomic office chair
+92bee870-3f5c-452f-af5c-5dcfff9aace6,Forklift Battery 48V,Electronics,SKU-010,1200.0,36fd3299-104c-48b7-b75e-a9882656bdf2,UL-001,50,demo_portal.html,48V deep-cycle forklift battery
+4b9c2d77-85c6-4834-b031-f4c3734e8f20,Fire Extinguisher CO2,Safety,SKU-011,85.0,fe166cf2-8d44-4303-b5be-8c39644eb8d8,UL-002,1000,demo_portal.html,5lb CO2 fire extinguisher
+58700f80-41c3-46b8-8722-ad0e5c4cdba2,Ethernet Cable Cat6 1000ft,IT Hardware,SKU-012,65.0,36fd3299-104c-48b7-b75e-a9882656bdf2,UL-003,2000,demo_portal.html,1000ft Cat6 plenum-rated ethernet
+7a3b00c7-31c5-44c6-8bfc-260c558b2c32,Lubricating Oil Industrial,Chemicals,SKU-013,32.0,22891d31-4a84-46d7-bcfa-4603315ae231,REACH-003,5000,demo_portal.html,Multi-viscosity industrial lubricant
+e5ee1b31-2010-4d71-80a1-fa117375f507,Steel Toe Boots Size Range,Safety,SKU-014,95.0,fe166cf2-8d44-4303-b5be-8c39644eb8d8,ASTM-001,1500,demo_portal.html,ASTM F2413 steel toe work boots
+2d662eae-7f0b-4723-aeff-9647f35cd8e8,UPS Battery Backup 1500VA,Electronics,SKU-015,220.0,36fd3299-104c-48b7-b75e-a9882656bdf2,UL-004,300,demo_portal.html,1500VA tower UPS with LCD display
+ea856790-a7cd-4696-ac0c-febd4fbbfe77,Shipping Pallets Wooden,Logistics,SKU-016,15.0,544f0d56-1025-4202-a85d-dec158856285,ISPM-001,8000,demo_portal.html,ISPM 15 heat-treated wooden pallets
+ad587f21-688b-4b30-8909-438cb99f2010,Barcode Scanner Wireless,Electronics,SKU-017,145.0,36fd3299-104c-48b7-b75e-a9882656bdf2,FCC-003,400,demo_portal.html,2D wireless barcode scanner
+8c6f72d1-99a8-44e0-8385-9e18f42ca2d1,First Aid Kit Industrial,Safety,SKU-018,55.0,fe166cf2-8d44-4303-b5be-8c39644eb8d8,OSHA-001,2000,demo_portal.html,OSHA-compliant 200-person first aid kit
+ebd40e0f-9e30-4125-a580-e7986c0da6f7,Printer Paper A4 Case,Office,SKU-019,28.0,9245dd04-08bb-4e49-a675-ceae123d8def,FSC-001,5000,demo_portal.html,FSC certified 5-ream case A4 paper
+753f1947-f8e1-4d68-977b-4b737f8ba1a3,High Vis Vest ANSI Class 2,Safety,SKU-020,14.0,fe166cf2-8d44-4303-b5be-8c39644eb8d8,ANSI-003,6000,demo_portal.html,ANSI/ISEA 107 Class 2 safety vest

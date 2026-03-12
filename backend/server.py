@@ -22,6 +22,14 @@ from agents.orchestrator import run_procurement
 from nova_act_worker import get_worker
 from embedding_service import init_embedding_tables, seed_product_embeddings, verify_screenshot_similarity
 
+# --- AWS X-RAY INSTRUMENTATION ---
+from aws_xray_sdk.core import xray_recorder, patch_all
+from aws_xray_sdk.ext.fastapi.middleware import XRayMiddleware
+
+# Patch boto3 to trace all AWS service calls
+patch_all()
+xray_recorder.configure(service='OmniProcure-API')
+
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname)s %(message)s")
 logger = logging.getLogger("server")
 
@@ -65,6 +73,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Add X-Ray Middleware
+app.add_middleware(XRayMiddleware, recorder=xray_recorder)
 
 
 # ---------------------------------------------------------------------------
@@ -115,10 +126,24 @@ async def run_procurement_pipeline(job_id: str, request_text: str, user_id: str)
         logger.info(f"[{job_id}] [{step_name}] {status}: {detail}")
 
     try:
-        # Transition to RUNNING
-        if job_id in jobs:
-            jobs[job_id]["status"] = "RUNNING"
-        await db.update_job_status(job_id, "RUNNING")
+        from aws_xray_sdk.core import xray_recorder
+        
+        # Start X-Ray segment for the pipeline
+        with xray_recorder.in_segment("procurement_pipeline") as segment:
+            segment.put_annotation("job_id", job_id)
+            segment.put_annotation("user_id", user_id)
+            
+            # Transition to RUNNING
+            if job_id in jobs:
+                jobs[job_id]["status"] = "RUNNING"
+            await db.update_job_status(job_id, "RUNNING")
+
+            # 1. ORCHESTRATOR
+            await step(job_id, "ORCHESTRATOR", "running",
+                       "Multi-agent team initializing...", {})
+
+            loop = asyncio.get_event_loop()
+            result = await loop.run_in_executor(None, run_procurement, request_text)
 
         # 1. ORCHESTRATOR
         await step(job_id, "ORCHESTRATOR", "running",

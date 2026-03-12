@@ -71,7 +71,8 @@ When you receive a procurement request, follow this EXACT sequence — no deviat
 STEP 1: Call delegate_to_catalog_agent to find the product and get its price/supplier
 STEP 2: Call delegate_to_compliance_agent with category, unit_price, quantity from Step 1
 STEP 3: If compliance passed → call delegate_to_actuator_agent. 
-         - ALWAYS pass portal_url as 'demo_portal'.
+         - Use portal_url as 'demo_portal' by default.
+         - If the user explicitly mentions a specific supplier portal (e.g., Uline, Grainger), use that URL.
          - ALWAYS pass 'budget' as the UNIT PRICE found in Step 1, NOT the total budget.
          NEVER ask the user for a URL.
         If compliance failed → skip Step 3
