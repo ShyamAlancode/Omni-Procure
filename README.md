@@ -35,54 +35,38 @@ OmniProcure orchestrates a team of AI agents powered by Amazon Nova to:
 
 ---
 
-## Architecture
-
-User Prompt (Natural Language)
-|
-V
-+---------------------------------+
-| ORCHESTRATOR AGENT              |
-| Amazon Nova Pro                 |
-| AWS Strands Agents SDK          |
-| maxReasoningEffort: high        |
-+----+----------+-----------------+
-     |          |
-     V          V
-+---------+ +--------------+
-| CATALOG | | COMPLIANCE   |
-| AGENT   | | AGENT        |
-|Nova Lite| | Nova Lite    |
-| (Tools) | | (Tools)      |
-+----+----+ +------+-------+
-     |             |
-     +------+------+
-            |
-            V
-+-----------------------+
-| ACTUATOR AGENT        |
-| Amazon Nova Act       |
-| Headless Browser Auto |
-| demo_portal.html      |
-+----------+------------+
-           | screenshot
-           V
-+-----------------------+
-| EVIDENCE REVIEWER     |
-| Nova Lite Vision QA   |
-| Nova MME Embeddings   |
-| Magic-byte detection  |
-+----------+------------+
-           | verdict + confidence
-           V
-+-----------------------+
-| HUMAN-IN-THE-LOOP     |
-| HITL Approval Gate    |
-| Approve / Reject      |
-+----------+------------+
-           |
-           V
-Purchase Order Executed
-Saved to DB + CloudWatch
+```text
+                                 [ User Request ]
+                                         │
+                                         ▼
+                 ┌───────────────────────────────────────────────────┐
+                 │             ORCHESTRATOR (Nova Pro)               │
+                 │        Analytic Reasoning & Command Center        │
+                 └──────┬──────────────────┬──────────────────┬──────┘
+                        │                  │                  │
+                        ▼                  ▼                  ▼
+              ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐
+              │  CATALOG AGENT   │  │ COMPLIANCE AGENT │  │  ACTUATOR AGENT  │
+              │   (Nova Lite)    │  │   (Nova Lite)    │  │ (Nova Act Worker)│
+              │ Semantic Search  │  │ Budget & Policy  │  │ Visual Navigation│
+              └────────┬─────────┘  └────────┬─────────┘  └────────┬─────────┘
+                       │                     │                     │
+                       └──────────┬──────────┴─────────────────────┘
+                                  │
+                                  ▼
+              ┌───────────────────────────────────────────────────┐
+              │              EVIDENCE REVIEWER (Vision)           │
+              │        Cross-Modal Validation & Consensus         │
+              └──────┬────────────────────────────────────┬──────┘
+                     │                                    │
+                     ▼                                    ▼
+              [ REJECTED ]                         [ HITL GATEWAY ]
+              Policy Breach                        Human Approval
+                                                          │
+                                                          ▼
+                                                  [ PO EXECUTED ]
+                                                Audit Log Created
+```
 
 ---
 
@@ -102,41 +86,26 @@ Saved to DB + CloudWatch
 
 ---
 
-## Project Structure
+### Multi-Agent System (`/backend/agents`)
+*   **`orchestrator.py`**: High-reasoning master agent (Nova Pro) managing sub-agent lifecycles.
+*   **`catalog_agent.py`**: Specialist for semantic product lookup and stock validation.
+*   **`compliance_agent.py`**: Validates organizational procurement policy and budget constraints.
+*   **`actuator_agent.py`**: Interface for Nova Act's high-fidelity browser automation.
+*   **`evidence_agent.py`**: Vision QA specialist for cross-verifying order evidence.
 
-omniprocure-landing/
-├── backend/
-│   ├── server.py             # FastAPI server, WebSocket streaming
-│   ├── database.py           # Edge ERP Cache (SQLite) + audit log
-│   ├── embedding_service.py  # Nova Multimodal Embeddings
-│   ├── nova_act_worker.py    # Nova Act browser automation
-│   ├── cloudwatch_logger.py  # AWS CloudWatch structured logging
-│   ├── mcp_server.py         # MCP-inspired interface (7 tools)
-│   ├── demo_portal.html      # Supplier portal demo target
-│   └── agents/
-│       ├── orchestrator.py    # Nova Pro master agent
-│       ├── catalog_agent.py   # Product search specialist
-│       ├── compliance_agent.py# Budget & policy verification
-│       ├── actuator_agent.py  # Nova Act interface agent
-│       └── evidence_agent.py  # Vision QA reviewer
-├── src/
-│   ├── app/
-│   │   ├── layout.tsx        # Root layout + Amplify provider
-│   │   ├── dashboard/page.tsx # Main dashboard
-│   │   └── auth/
-│   │       ├── login/page.tsx # Cognito login
-│   │       └── register/page.tsx # Cognito registration
-│   ├── components/
-│   │   ├── AIOrchestratorPanel.tsx # Main agent UI + WebSocket
-│   │   ├── EvidenceReviewPanel.tsx # Vision QA results panel
-│   │   └── AmplifyProvider.tsx # Amplify config provider
-│   └── lib/
-│       ├── auth.ts           # Cognito auth helpers
-│       └── cognitoConfig.ts  # Amplify configuration
-├── .env.local                # Environment variables
-├── requirements.txt          # Python dependencies
-├── package.json              # Node dependencies
-└── README.md
+### Core Services (`/backend`)
+*   **`nova_act_worker.py`**: Visual navigation engine powered by Amazon Nova Act.
+*   **`embedding_service.py`**: Multimodal vector similarity checking for product matches.
+*   **`mcp_server.py`**: Architecture-inspired data access gateway (7 distinct tools).
+*   **`database.py`**: High-performance ERP cache (SQLite) and secure audit log.
+*   **`server.py`**: Secure FastAPI gateway with real-time WebSocket streaming.
+*   **`cloudwatch_logger.py`**: Structured AWS CloudWatch observability and monitoring.
+
+### User Interface (`/src`)
+*   **`dashboard/page.tsx`**: Unified mission control for orchestrating procurement.
+*   **`components/AIOrchestratorPanel.tsx`**: Real-time agent thought streaming and task tracking.
+*   **`components/EvidenceReviewPanel.tsx`**: Granular Vision QA validation dashboard.
+*   **`lib/auth.ts`**: Enterprise-grade identity management via Amazon Cognito.
 
 ---
 
