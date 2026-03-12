@@ -170,24 +170,27 @@ async def run_procurement_pipeline(job_id: str, request_text: str, user_id: str)
                    {"automation_data": automation_res})
 
         # Get real screenshot from nova_act cache
-        from nova_act_worker import NovaActWorker
-        screenshot_b64 = NovaActWorker.last_screenshot
-        po_draft = automation_res.get("po_draft") or {
-            "product_name": product_name,
-            "quantity":     quantity,
-            "unit_price":   catalog_res.get("unit_price", budget_per_unit),
-            "total_price":  round(quantity * catalog_res.get("unit_price", budget_per_unit), 2),
-            "supplier":     catalog_res.get("supplier_name", "SafetyPro Supplies Inc"),
-            "compliance_status": "PASSED",
-            "sku":          catalog_res.get("sku", "N/A"),
+        from nova_act_worker import GLOBAL_SCREENSHOT_CACHE
+        screenshot_b64 = GLOBAL_SCREENSHOT_CACHE.get("last", "")
+        
+        # Robust merge: prioritize actuator's actual PO draft over orchestrator's potentially truncated one
+        actuator_po = automation_res.get("po_draft") or {}
+        po_draft = {
+            "product_name": actuator_po.get("product_name") or product_name,
+            "quantity":     actuator_po.get("quantity") or quantity,
+            "unit_price":   actuator_po.get("unit_price") or catalog_res.get("unit_price") or budget_per_unit,
+            "total_price":  actuator_po.get("total_price") or round(quantity * (catalog_res.get("unit_price") or budget_per_unit), 2),
+            "supplier":     actuator_po.get("supplier") or catalog_res.get("supplier_name") or "SafetyPro Supplies Inc",
+            "compliance_status": actuator_po.get("compliance_status") or "PASSED",
+            "sku":          actuator_po.get("sku") or catalog_res.get("sku") or "N/A",
         }
 
         # 4.5 EVIDENCE REVIEW
         from agents.evidence_agent import evidence_agent as ev_agent
         from nova_act_worker import NovaActWorker
 
-        screenshot_b64 = NovaActWorker.last_screenshot
-        evidence_result = {"verdict": "APPROVED", "confidence": 75, "checks": [], "summary": "No screenshot"}
+        screenshot_b64 = GLOBAL_SCREENSHOT_CACHE.get("last", "")
+        evidence_result = {"verdict": "NEEDS_REVIEW", "confidence": 0, "checks": [], "summary": "No screenshot available"}
 
         if screenshot_b64:
             try:

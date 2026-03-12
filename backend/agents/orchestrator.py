@@ -91,7 +91,8 @@ CRITICAL RULES:
 - Never ask the user for more information
 - Never stop mid-workflow
 - Always complete all steps before responding
-- Return ONLY the JSON object, no other text"""
+- Return ONLY the JSON object, no other text
+- CRITICAL: Copy the 'po_draft' from the automation tool output EXACTLY into the final JSON. Do not summarize or truncate it."""
 
 master_orchestrator = Agent(
     model=model,

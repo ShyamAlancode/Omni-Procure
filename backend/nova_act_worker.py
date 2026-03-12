@@ -23,8 +23,11 @@ except ImportError:
     logger.warning("Pillow not installed — fallback screenshots will be minimal")
 
 
+# --- GLOBAL CACHE FOR SCREENSHOTS ---
+# This ensures that even if modules are imported differently, they can share results.
+GLOBAL_SCREENSHOT_CACHE = {"last": ""}
+
 class NovaActWorker:
-    last_screenshot = ""  # class-level cache
     """
     Automates supplier portal procurement using Nova Act browser agent.
     Falls back gracefully to a synthetic screenshot if Nova Act or the
@@ -107,7 +110,7 @@ class NovaActWorker:
 
                 emit("Browser automation complete — ready for approval")
 
-                NovaActWorker.last_screenshot = screenshot_b64
+                GLOBAL_SCREENSHOT_CACHE["last"] = screenshot_b64
                 return {
                     "success": True,
                     "screenshot_base64": screenshot_b64,
@@ -144,7 +147,7 @@ class NovaActWorker:
             "Synthetic screenshot generated for HITL review",
         ]
 
-        NovaActWorker.last_screenshot = screenshot_b64
+        GLOBAL_SCREENSHOT_CACHE["last"] = screenshot_b64
         return {
             "success": True,
             "screenshot_base64": screenshot_b64,
