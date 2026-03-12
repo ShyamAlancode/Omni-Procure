@@ -1,7 +1,14 @@
 from strands import Agent, tool
 from strands.models import BedrockModel
-import boto3, base64, json, re, os, imghdr, io
+import boto3
+import json
+import base64
+import os
+import re
 import sys
+from dotenv import load_dotenv
+
+load_dotenv()
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 model = BedrockModel(
@@ -31,8 +38,10 @@ def review_procurement_evidence(
 
     # ── Check 1: Nova Vision — read the screenshot ──
     try:
-        client = boto3.client("bedrock-runtime",
-                              region_name=os.environ.get("AWS_REGION", "us-east-1"))
+        client = boto3.client(
+        service_name='bedrock-runtime',
+        region_name=os.environ.get("AWS_REGION") or os.environ.get("AWS_DEFAULT_REGION") or "us-east-1"
+    )
         # DETECT format from magic bytes
         raw_bytes = base64.b64decode(screenshot_b64)
         img_format = "png"

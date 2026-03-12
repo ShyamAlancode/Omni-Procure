@@ -1,6 +1,10 @@
 from strands import Agent, tool
 from strands.models import BedrockModel
 import os, json, sys, re, time
+from dotenv import load_dotenv
+
+# Load .env file
+load_dotenv()
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 from agents.compliance_agent import compliance_agent
 from agents.catalog_agent import catalog_agent
@@ -9,7 +13,7 @@ from agents.actuator_agent import actuator_agent
 def create_model_with_retry():
     return BedrockModel(
         model_id="us.amazon.nova-pro-v1:0",  # Pro supports reasoning
-        region_name=os.environ.get("AWS_REGION", "us-east-1"),
+        region_name=os.environ.get("AWS_REGION") or os.environ.get("AWS_DEFAULT_REGION") or "us-east-1",
         max_tokens=8192,
     )
 

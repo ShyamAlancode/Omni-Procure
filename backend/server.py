@@ -7,6 +7,10 @@ import uuid
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from typing import Any
+from dotenv import load_dotenv
+
+# Load .env file
+load_dotenv()
 
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Request, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
@@ -40,8 +44,11 @@ async def lifespan(app: FastAPI):
     await db.init_db()
     await db.seed_db()
     await init_embedding_tables()
-    await seed_product_embeddings()
-    logger.info("Database and Embeddings ready.")
+    try:
+        await seed_product_embeddings()
+        logger.info("Database and Embeddings ready.")
+    except Exception as e:
+        logger.warning(f"Could not seed embeddings on startup: {e}. Check network/AWS credentials.")
     yield
     logger.info("OmniProcure server shutting down.")
 

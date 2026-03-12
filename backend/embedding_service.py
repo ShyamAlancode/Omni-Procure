@@ -5,6 +5,10 @@ import numpy as np
 import aiosqlite
 import os
 from typing import Optional
+from dotenv import load_dotenv
+
+# Load .env file
+load_dotenv()
 
 import database as db
 
@@ -12,7 +16,7 @@ MODEL_ID = "amazon.nova-2-multimodal-embeddings-v1:0"
 EMBEDDING_DIM = 1024  # balanced speed/accuracy (options: 256, 512, 1024, 3072)
 
 bedrock = boto3.client("bedrock-runtime", 
-                       region_name=os.environ.get("AWS_REGION", "us-east-1"))
+                       region_name=os.environ.get("AWS_REGION") or os.environ.get("AWS_DEFAULT_REGION") or "us-east-1")
 
 
 # ── Core Embedding Functions ──────────────────────────────────

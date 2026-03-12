@@ -1,11 +1,14 @@
 from strands import Agent, tool
 from strands.models import BedrockModel
+from dotenv import load_dotenv
 import os, sys, base64, json, re
+
+load_dotenv()
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 model = BedrockModel(
     model_id="us.amazon.nova-lite-v1:0",
-    region_name=os.environ.get("AWS_REGION", "us-east-1"),
+    region_name=os.environ.get("AWS_REGION") or os.environ.get("AWS_DEFAULT_REGION") or "us-east-1",
 )
 
 @tool
