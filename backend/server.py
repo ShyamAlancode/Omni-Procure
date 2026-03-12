@@ -135,8 +135,11 @@ async def run_procurement_pipeline(job_id: str, request_text: str, user_id: str)
         if job_id in jobs:
             jobs[job_id]["analysis"] = result
 
+        # Use actual catalog price if available, else fallback to budget
+        final_unit_price = catalog_res.get("unit_price") or budget_per_unit
+
         await step(job_id, "ORCHESTRATOR", "complete",
-                   f"Multi-agent analysis: {quantity}x {product_name} @ ${budget_per_unit:.2f}/unit",
+                   f"Multi-agent analysis: {quantity}x {product_name} @ ${final_unit_price:.2f}/unit",
                    {"strands_result": result})
 
         # 2. CATALOG MATCH (From Multi-Agent Result)
@@ -171,11 +174,11 @@ async def run_procurement_pipeline(job_id: str, request_text: str, user_id: str)
         po_draft = automation_res.get("po_draft") or {
             "product_name": product_name,
             "quantity":     quantity,
-            "unit_price":   budget_per_unit,
-            "total_price":  round(quantity * budget_per_unit, 2),
-            "supplier":     result.get("catalog_result", {}).get("supplier_name", "SafetyPro Supplies Inc"),
+            "unit_price":   catalog_res.get("unit_price", budget_per_unit),
+            "total_price":  round(quantity * catalog_res.get("unit_price", budget_per_unit), 2),
+            "supplier":     catalog_res.get("supplier_name", "SafetyPro Supplies Inc"),
             "compliance_status": "PASSED",
-            "sku":          result.get("catalog_result", {}).get("sku", "N/A"),
+            "sku":          catalog_res.get("sku", "N/A"),
         }
 
         # 4.5 EVIDENCE REVIEW

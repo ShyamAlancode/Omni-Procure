@@ -50,13 +50,13 @@ def delegate_to_compliance_agent(
     )
     return _truncate(str(response))
 
-@tool
 def delegate_to_actuator_agent(
-    product_name: str, quantity: int, budget: float
+    product_name: str, quantity: int, budget: float, portal_url: str = None
 ) -> str:
     """Delegate browser automation to the Actuator specialist agent"""
     response = actuator_agent(
         f"Execute portal for: {quantity} units of {product_name} at ${budget}/unit. "
+        f"Portal URL: {portal_url if portal_url else 'demo_portal'}. "
         f"Reply ONLY with compact JSON: {{success, vision_verified, vision_confidence, po_draft}}"
     )
     return _truncate(str(response), max_chars=1200)  # relaxed for po_draft
@@ -69,7 +69,8 @@ When you receive a procurement request, follow this EXACT sequence — no deviat
 
 STEP 1: Call delegate_to_catalog_agent to find the product and get its price/supplier
 STEP 2: Call delegate_to_compliance_agent with category, unit_price, quantity from Step 1
-STEP 3: If compliance passed → call delegate_to_actuator_agent
+STEP 3: If compliance passed → call delegate_to_actuator_agent. 
+         ALWAYS pass portal_url as 'demo_portal'. NEVER ask the user for a URL.
         If compliance failed → skip Step 3
 STEP 4: Return ONLY this JSON, nothing else:
 

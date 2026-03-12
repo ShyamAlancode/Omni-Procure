@@ -15,7 +15,8 @@ model = BedrockModel(
 def execute_supplier_portal(
     product_name: str,
     quantity: int,
-    budget_per_unit: float
+    budget_per_unit: float,
+    portal_url: str = None
 ) -> dict:
     """
     Use Nova Act to automate the supplier web portal.
@@ -24,8 +25,13 @@ def execute_supplier_portal(
     from nova_act_worker import NovaActWorker
     import boto3
 
+    # Default to demo portal if no URL provided
+    if not portal_url:
+        demo_path = os.path.abspath("demo_portal.html").replace('\\', '/')
+        portal_url = f"file:///{demo_path}"
+
     worker = NovaActWorker()
-    result = worker.execute(product_name, quantity, budget_per_unit)
+    result = worker.execute(product_name, quantity, budget_per_unit, portal_url=portal_url)
 
     screenshot_b64 = result.get("screenshot_base64", "")
     
@@ -57,7 +63,7 @@ def execute_supplier_portal(
                     {
                         "role": "user",
                         "content": [
-                            {"image": {"format": img_format, "source": {"bytes": screenshot_b64}}},
+                            {"image": {"format": img_format, "source": {"bytes": raw_bytes}}},
                             {"text": prompt}
                         ]
                     }

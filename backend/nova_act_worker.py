@@ -36,6 +36,7 @@ class NovaActWorker:
         product_name: str,
         quantity: int,
         budget: float,
+        portal_url: str = None,
         progress_callback: Callable[[str], None] | None = None,
     ) -> dict:
         """
@@ -64,9 +65,9 @@ class NovaActWorker:
             return self._fallback_result(product_name, quantity, budget, "nova_act not installed")
 
         portal_path = os.path.abspath("demo_portal.html")
-        starting_url = "file:///" + portal_path.replace('\\', '/')
+        starting_url = portal_url if portal_url else ("file:///" + portal_path.replace('\\', '/'))
 
-        if not os.path.exists(portal_path):
+        if not portal_url and not os.path.exists(portal_path):
             logger.warning(f"demo_portal.html not found at {portal_path}")
             return self._fallback_result(product_name, quantity, budget, "demo_portal.html not found")
 
