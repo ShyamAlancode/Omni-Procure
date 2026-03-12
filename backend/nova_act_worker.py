@@ -64,7 +64,7 @@ class NovaActWorker:
             return self._fallback_result(product_name, quantity, budget, "nova_act not installed")
 
         portal_path = os.path.abspath("demo_portal.html")
-        starting_url = f"file:///{portal_path}"
+        starting_url = "file:///" + portal_path.replace('\\', '/')
 
         if not os.path.exists(portal_path):
             logger.warning(f"demo_portal.html not found at {portal_path}")

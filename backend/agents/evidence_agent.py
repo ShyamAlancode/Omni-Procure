@@ -36,6 +36,20 @@ def review_procurement_evidence(
     checks = []
     overall_confidence = 0
 
+    # Guard: if screenshot is empty or placeholder, skip vision call
+    if not screenshot_b64 or len(screenshot_b64) < 100:
+        return {
+            "verdict": "NEEDS_REVIEW",
+            "confidence": 0,
+            "checks": [{
+                "check": "VISION_READ",
+                "passed": False,
+                "detail": "No valid screenshot available. Nova Act browser did not capture an image.",
+                "confidence": 0
+            }],
+            "summary": "Screenshot unavailable — manual review required."
+        }
+
     # ── Check 1: Nova Vision — read the screenshot ──
     try:
         client = boto3.client(
