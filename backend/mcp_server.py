@@ -1,3 +1,5 @@
+# NOTE: This is an MCP-inspired interface, not a full JSON-RPC MCP server yet.
+# Agents call typed Python tools instead of embedding DB schemas in prompts.
 from mcp.server.fastmcp import FastMCP
 import aiosqlite
 import database as db

@@ -1,3 +1,6 @@
+# NOTE: This is an edge-deployed ERP cache using SQLite for the hackathon demo.
+# The data-access layer is fully ORM/function-based; swapping to PostgreSQL/RDS
+# requires only changing the connection string and running the same migrations.
 import aiosqlite
 import asyncio
 import uuid

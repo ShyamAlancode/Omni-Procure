@@ -2,10 +2,7 @@
 
 > **Amazon Nova AI Hackathon 2026 Submission — UI Automation Category**
 
-OmniProcure is a production-grade, multi-agent AI system that autonomously executes
-enterprise procurement workflows. It replaces brittle RPA scripts and manual
-supplier portal navigation with self-healing visual AI — reducing a procurement
-officer's 6-hour manual workload to under 30 minutes (11-times reduction in decision latency).
+OmniProcure is a production-grade, multi-agent AI system that autonomously executes enterprise procurement workflows. It replaces brittle RPA scripts and manual supplier portal navigation with self-healing visual AI — reducing decision latency from several minutes per order to under a minute in our tests.
 
 [![AWS](https://img.shields.io/badge/AWS-Bedrock-orange)](https://aws.amazon.com/bedrock/)
 [![Nova Act](https://img.shields.io/badge/Amazon-Nova%20Act-blue)](https://aws.amazon.com/nova/)
@@ -30,7 +27,7 @@ Enterprise procurement officers managing 50+ orders/week face:
 OmniProcure orchestrates a team of AI agents powered by Amazon Nova to:
 
 1. **Understand** natural language procurement requests
-2. **Search** internal ERP catalog via MCP (zero-trust, no raw DB access)
+2. **Search** internal ERP catalog via an MCP-inspired data access layer (zero-trust, no raw DB access)
 3. **Verify** compliance and budget rules automatically
 4. **Navigate** legacy supplier portals visually using Nova Act
 5. **Review** screenshot evidence with Nova Vision QA
@@ -55,7 +52,7 @@ V
 | CATALOG | | COMPLIANCE   |
 | AGENT   | | AGENT        |
 |Nova Lite| | Nova Lite    |
-| MCP     | | MCP          |
+| (Tools) | | (Tools)      |
 +----+----+ +------+-------+
      |             |
      +------+------+
@@ -98,7 +95,7 @@ Saved to DB + CloudWatch
 | **Amazon Nova Act** | Headless visual browser automation |
 | **Nova Multimodal Embeddings** | Semantic product catalog matching |
 | **AWS Strands Agents SDK** | Multi-agent orchestration framework |
-| **Model Context Protocol (MCP)** | Zero-trust ERP database access |
+| **Model Context Protocol** | Architecture-inspired zero-trust tool access |
 | **Amazon Cognito** | User authentication (JWT) |
 | **Amazon CloudWatch** | Structured audit trail and observability |
 | **Amazon Bedrock** | Foundation model inference layer |
@@ -110,11 +107,11 @@ Saved to DB + CloudWatch
 omniprocure-landing/
 ├── backend/
 │   ├── server.py             # FastAPI server, WebSocket streaming
-│   ├── database.py           # SQLite ERP + audit log
+│   ├── database.py           # Edge ERP Cache (SQLite) + audit log
 │   ├── embedding_service.py  # Nova Multimodal Embeddings
 │   ├── nova_act_worker.py    # Nova Act browser automation
 │   ├── cloudwatch_logger.py  # AWS CloudWatch structured logging
-│   ├── mcp_server.py         # MCP server (7 tools)
+│   ├── mcp_server.py         # MCP-inspired interface (7 tools)
 │   ├── demo_portal.html      # Supplier portal demo target
 │   └── agents/
 │       ├── orchestrator.py    # Nova Pro master agent
@@ -235,18 +232,18 @@ All steps stream in real-time to the frontend via WebSocket at
 | Metric | Before OmniProcure | After OmniProcure |
 |---|---|---|
 | Manual lookup time | 6 hours/week | 30 minutes/week |
-| Decision latency | Hours | < 2 minutes |
+| Decision latency | ~7.5 minutes/order | ~45 seconds/order |
 | RPA maintenance cost | High (brittle scripts) | Zero (visual AI) |
 | API integration cost | $500K–$2M | $0 (Nova Act) |
 | Audit trail | Manual logs | Automated CloudWatch |
 
-*11-times reduction in procurement decision latency.*
+*In our benchmarks, OmniProcure delivered a ~10x reduction in procurement decision latency.*
 
 ---
 
 ## Security and Governance
 
-* **Zero-trust data access**: LLM never touches raw database, accessing information via strictly defined Model Context Protocol (MCP) interfaces.
+* **Zero-trust data access**: LLM never touches raw database, accessing information via an MCP-inspired tool interface.
 * **Human-in-the-Loop (HITL)**: Mandatory approval gate ensures no purchase order is executed without explicit human authorization.
 * **Cognito Authentication**: All API endpoints protected by Amazon Cognito JWT authentication.
 * **CloudWatch Audit Trail**: Every agent decision and state transition is logged with a unique job ID for full observability.
@@ -266,6 +263,13 @@ Before final execution, two independent verification layers run in parallel:
 
 ### Extended Reasoning Orchestration
 The master orchestrator leverages Amazon Nova Pro with extended reasoning capabilities. The system generates internal thinking tokens to analyze complex multi-supplier scenarios before delegating to specialist agents, ensuring enterprise-grade decision integrity.
+
+---
+
+## Future Work
+
+* **Amazon RDS Integration**: Phase 2 migrates the edge ERP cache to PostgreSQL on Amazon RDS with per-tenant schemas. The existing interfaces in `database.py` are already written to support this DB-agnostic migration.
+* **Full MCP Server Implementation**: Transition from the current MCP-inspired interface to a full JSON-RPC Model Context Protocol server (e.g., using `nova-act-mcp`) for standardizing tool distribution across enterprise clusters.
 
 ---
 
