@@ -67,6 +67,9 @@ class NovaActWorker:
             emit("Nova Act not installed — generating synthetic portal screenshot")
             return self._fallback_result(product_name, quantity, budget, "nova_act not installed")
 
+        if portal_url == "demo_portal":
+             portal_url = None
+
         portal_path = os.path.abspath("demo_portal.html")
         starting_url = portal_url if portal_url else ("file:///" + portal_path.replace('\\', '/'))
 
